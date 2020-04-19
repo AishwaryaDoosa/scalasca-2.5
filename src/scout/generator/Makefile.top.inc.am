@@ -1,0 +1,57 @@
+## -*- mode: makefile -*-
+##*************************************************************************##
+##  SCALASCA    http://www.scalasca.org/                                   ##
+##*************************************************************************##
+##  Copyright (c) 1998-2015                                                ##
+##  Forschungszentrum Juelich GmbH, Juelich Supercomputing Centre          ##
+##                                                                         ##
+##  Copyright (c) 2009-2013                                                ##
+##  German Research School for Simulation Sciences GmbH,                   ##
+##  Laboratory for Parallel Programming                                    ##
+##                                                                         ##
+##  This software may be modified and distributed under the terms of       ##
+##  a BSD-style license.  See the COPYING file in the package base         ##
+##  directory for details.                                                 ##
+##*************************************************************************##
+
+
+##--- Additional targets ----------------------------------------------------
+
+## SCOUT pattern generator parser dist-hook
+PHONY_TARGETS += \
+    copy-generator-parser-files-to-dist
+if CROSS_BUILD
+
+copy-generator-parser-files-to-dist:
+	$(MKDIR_P) "$(distdir)/build-backend/"
+	for i in ScoutPatternParser.hh ScoutPatternParser.cc ScoutPatternScanner.cc; do \
+	    cp -p "`test -f build-frontend/$$i || echo '$(srcdir)/'`build-frontend/$$i" \
+	          "$(distdir)/build-backend/"; \
+        done
+
+else !CROSS_BUILD
+
+copy-generator-parser-files-to-dist:
+	$(MKDIR_P) "$(distdir)/build-frontend/"
+	for i in ScoutPatternParser.hh ScoutPatternParser.cc ScoutPatternScanner.cc; do \
+	    cp -p "`test -f build-backend/$$i || echo '$(srcdir)/'`build-backend/$$i" \
+	          "$(distdir)/build-frontend/"; \
+        done
+
+endif !CROSS_BUILD
+
+
+## Trigger (re-)generation of pattern code from top-level Makefile
+PHONY_TARGETS += \
+    gen-patterns
+if CROSS_BUILD
+
+gen-patterns:
+	$(MAKE) -C build-frontend gen-patterns
+
+else !CROSS_BUILD
+
+gen-patterns:
+	$(MAKE) -C build-backend gen-patterns
+
+endif !CROSS_BUILD

@@ -1,0 +1,74 @@
+## -*- mode: makefile -*-
+##*************************************************************************##
+##  SCALASCA    http://www.scalasca.org/                                   ##
+##*************************************************************************##
+##  Copyright (c) 1998-2015                                                ##
+##  Forschungszentrum Juelich GmbH, Juelich Supercomputing Centre          ##
+##                                                                         ##
+##  Copyright (c) 2009-2013                                                ##
+##  German Research School for Simulation Sciences GmbH,                   ##
+##  Laboratory for Parallel Programming                                    ##
+##                                                                         ##
+##  This software may be modified and distributed under the terms of       ##
+##  a BSD-style license.  See the COPYING file in the package base         ##
+##  directory for details.                                                 ##
+##*************************************************************************##
+
+
+## Convenience variable
+SCOUT_GEN_SRC = $(SRC_ROOT)src/scout/generator
+
+
+##--- Programs --------------------------------------------------------------
+
+## SCOUT pattern code generator
+BUILT_SOURCES += \
+    ScoutPatternParser.hh
+noinst_PROGRAMS += \
+    gen_patterns
+gen_patterns_SOURCES = \
+    $(SCOUT_GEN_SRC)/Pattern.h \
+    $(SCOUT_GEN_SRC)/Pattern.cpp \
+    $(SCOUT_GEN_SRC)/ScoutPatternParser.yy \
+    $(SCOUT_GEN_SRC)/ScoutPatternScanner.ll
+gen_patterns_CPPFLAGS = \
+    $(AM_CPPFLAGS) \
+    -I$(INC_ROOT)src/scout/generator
+
+
+##--- Extra distribution files ----------------------------------------------
+
+## Pattern description files
+EXTRA_DIST += \
+    $(SCOUT_GEN_SRC)/Async.pattern \
+    $(SCOUT_GEN_SRC)/Counts.pattern \
+    $(SCOUT_GEN_SRC)/CriticalPath.pattern \
+    $(SCOUT_GEN_SRC)/Delay.MPI.pattern \
+    $(SCOUT_GEN_SRC)/Delay.OMP.pattern \
+    $(SCOUT_GEN_SRC)/Generic.pattern \
+    $(SCOUT_GEN_SRC)/Imbalance.pattern \
+    $(SCOUT_GEN_SRC)/Message.pattern \
+    $(SCOUT_GEN_SRC)/MPI_File.pattern \
+    $(SCOUT_GEN_SRC)/MPI_RMA.pattern \
+    $(SCOUT_GEN_SRC)/MPI.pattern \
+    $(SCOUT_GEN_SRC)/OMP.pattern \
+    $(SCOUT_GEN_SRC)/Pthread.pattern \
+    $(SCOUT_GEN_SRC)/SCOUT.pattern \
+    $(SCOUT_GEN_SRC)/Statistics.pattern \
+    $(SCOUT_GEN_SRC)/Thread.pattern \
+    $(SCOUT_GEN_SRC)/Waitstates.MPI.pattern
+
+
+##--- Additional targets ----------------------------------------------------
+
+## Trigger (re-)generation of pattern code
+PHONY_TARGETS += gen-patterns
+gen-patterns: gen_patterns
+	$(AM_V_GEN)( \
+	    gendir=`pwd`; \
+	    $(am__cd) $(INC_ROOT)/src/scout/generator; \
+	    $$gendir/gen_patterns SCOUT.pattern; \
+	    $(am__mv) Patterns_gen.h ..; \
+	    $(am__mv) Patterns_gen.cpp ..; \
+	    $(am__mv) Patterns_gen.html ../../../doc/patterns/patterns.html.in \
+	)
